@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hóa Học 10 - Luyện Tập Cân Bằng & Số Oxi Hóa</title>
+    
+    <!-- Google Fonts: Inter & Roboto Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Roboto Mono', 'monospace'],
+                    },
+                    colors: {
+                        academic: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            500: '#64748b',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .chem-font {
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        /* Shake animation for incorrect answer */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        .animate-shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        /* Success pulse */
+        @keyframes pulse-success {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+            100% { transform: scale(1); }
+        }
+
+        .animate-success {
+            animation: pulse-success 0.5s ease-in-out;
+        }
+
+        /* Drop Zone Styles */
+        .drop-zone {
+            min-width: 2.75rem;
+            height: 3rem;
+            border: 2px dashed #94a3b8;
+            transition: all 0.2s ease;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            transform: scale(1.05);
+        }
+
+        .drop-zone.filled {
+            border-style: solid;
+            border-color: #3b82f6;
+            background-color: #ffffff;
+        }
+
+        .drop-zone.correct {
+            border-color: #16a34a !important;
+            background-color: #f0fdf4 !important;
+            color: #15803d !important;
+        }
+
+        .drop-zone.incorrect {
+            border-color: #dc2626 !important;
+            background-color: #fef2f2 !important;
+            color: #b91c1c !important;
+        }
+
+        /* Number Tile Drag Styles */
+        .number-tile {
+            cursor: grab;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            touch-action: none;
+        }
+
+        .number-tile:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        .number-tile.selected {
+            ring: 3px;
+            ring-color: #2563eb;
+            background-color: #2563eb;
+            color: #ffffff;
+        }
+
+        /* Scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-slate-50 text-slate-800">
+
+    <!-- Top Header -->
+    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30">
+        <div class="max-w-5xl mx-auto px-4 py-3.5 flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 text-white p-2 rounded-lg flex items-center justify-center shadow-inner">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L5.6 15.11a2 2 0 00-1.023.547l-1.2 1.2a1 1 0 00.707 1.707h15.832a1 1 0 00.707-1.707l-1.2-1.2zM12 3v9m0 0l-3-3m3 3l3-3"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                        HÓA HỌC 10 
+                        <span class="text-xs bg-blue-600 text-blue-100 font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">Luyện Tập</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Chương trình Cân Bằng Phản Ứng Oxi Hóa - Khử & Số Oxi Hóa</p>
+                </div>
+            </div>
+
+            <!-- Header Action Controls -->
+            <div class="flex items-center space-x-2">
+                <button id="btn-guide" onclick="toggleGuideModal(true)" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Sổ tay lý thuyết
+                </button>
+                <button id="btn-sound" onclick="toggleSound()" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition" title="Bật/Tắt âm thanh">
+                    <svg id="sound-icon-on" class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z"></path></svg>
+                    <svg id="sound-icon-off" class="w-5 h-5 text-slate-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main App Container -->
+    <main class="max-w-4xl mx-auto w-full px-4 py-6 flex-grow flex flex-col justify-between gap-6">
+
+        <!-- Mode Navigation Tabs -->
+        <div class="bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-1">
+            <button id="tab-balancing" onclick="switchMode('balancing')" class="flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 bg-blue-600 text-white shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5 5 0 006 0l-3-9zm0 0h6m-6 0l6 6m6-6l3 1m0 0l-3 9a5 5 0 006 0l-3-9zm0 0h6m-6 0l6 6"></path></svg>
+                1. Cân Bằng Phản Ứng
+            </button>
+            <button id="tab-oxidation" onclick="switchMode('oxidation')" class="flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 bg-slate-100 text-slate-600 hover:bg-slate-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path></svg>
+                2. Xác Định Số Oxi Hóa
+            </button>
+        </div>
+
+        <!-- Progress and Score Bar -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <div class="flex justify-between items-center text-xs font-semibold text-slate-600 mb-2">
+                <span id="progress-text" class="uppercase tracking-wider">Tiến độ: Câu 1 / 5</span>
+                <span id="score-text" class="text-blue-600 font-bold">Điểm số: 0</span>
+            </div>
+            <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                <div id="progress-bar" class="bg-blue-600 h-full w-0 transition-all duration-300 rounded-full"></div>
+            </div>
+        </div>
+
+        <!-- Question Workspace Card -->
+        <div id="question-card" class="bg-white rounded-2xl border border-slate-200 shadow-md p-6 md:p-8 flex flex-col justify-between min-h-[340px] relative transition-all">
+            
+            <!-- Question Category Badge -->
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+                <div class="flex items-center gap-2">
+                    <span id="question-badge" class="bg-slate-100 text-slate-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Phản ứng Cháy</span>
+                    <span id="difficulty-badge" class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Độ khó: Trung bình</span>
+                </div>
+                <button onclick="resetCurrentQuestion()" class="text-slate-400 hover:text-slate-600 text-xs font-medium flex items-center gap-1 transition" title="Xóa các đáp án đã chọn">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Đặt lại
+                </button>
+            </div>
+
+            <!-- Question Instruction Prompt -->
+            <div id="question-instruction" class="text-sm md:text-base text-slate-700 font-medium mb-6">
+                Kéo thả các hệ số phù hợp vào ô trống <span class="chem-font text-blue-600 font-bold">[ ? ]</span> để cân bằng phản ứng:
+            </div>
+
+            <!-- Central Display Area for Chemical Formula/Equation -->
+            <div class="my-auto py-6 px-4 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-center overflow-x-auto">
+                <div id="equation-display" class="chem-font text-xl md:text-2xl font-bold text-slate-900 flex items-center flex-wrap gap-y-4 justify-center tracking-wide leading-relaxed">
+                    <!-- Dynamic Chemical Equation or Compound Inserted Here -->
+                </div>
+            </div>
+
+            <!-- Hint & Feedback Message Area -->
+            <div id="feedback-container" class="mt-6 transition-all duration-200">
+                <!-- Collapsible Hint Section -->
+                <div id="hint-box" class="hidden bg-amber-50 border border-amber-200 text-amber-900 text-xs md:text-sm p-3.5 rounded-lg mb-3 flex items-start gap-2.5">
+                    <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                    <div>
+                        <span class="font-bold">Gợi ý:</span> <span id="hint-text">Đếm số nguyên tố ở 2 vế.</span>
+                    </div>
+                </div>
+
+                <!-- Correct / Error Dynamic Alert -->
+                <div id="status-message" class="hidden p-3 rounded-lg text-sm font-semibold text-center transition-all">
+                    <!-- Dynamic feedback message -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Answer Bank / Drag Palette -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-md p-5">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11"></path></svg>
+                    Kho số đáp án (Kéo thả hoặc Bấm chọn):
+                </span>
+                <span class="text-xs text-slate-400">Chạm số rồi chọn ô trống nếu dùng điện thoại</span>
+            </div>
+
+            <!-- Number Palette Grid -->
+            <div id="number-bank" class="flex flex-wrap gap-2.5 justify-center py-2">
+                <!-- Numbers generated dynamically -->
+            </div>
+
+            <!-- Primary Action Buttons -->
+            <div class="mt-5 flex flex-col sm:flex-row gap-3">
+                <button id="btn-hint" onclick="toggleHint()" class="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg border border-slate-200 text-sm transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                    Hiện Gợi Ý
+                </button>
+                <button id="btn-check" onclick="checkAnswer()" class="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow hover:shadow-md text-sm transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    Kiểm Tra Kết Quả
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-3 text-center text-xs text-slate-500">
+        <p>© 2026 EdTech Chemistry Grade 10 - Công cụ học tập & luyện tập Hóa Học tương tác</p>
+    </footer>
+
+    <!-- Completion Modal -->
+    <div id="completion-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-6 text-center transform transition-all animate-success">
+            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-900 mb-1">Xuất Sắc! Hoàn Thành Bài Tập</h2>
+            <p id="modal-subtext" class="text-sm text-slate-600 mb-6">Bạn đã hoàn thành xong tất cả các câu hỏi trong phần này.</p>
+            
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6 grid grid-cols-2 gap-4 text-center">
+                <div>
+                    <span class="block text-xs text-slate-500 uppercase font-semibold">Tổng điểm</span>
+                    <span id="modal-final-score" class="text-2xl font-bold text-blue-600">100</span>
+                </div>
+                <div>
+                    <span class="block text-xs text-slate-500 uppercase font-semibold">Độ chính xác</span>
+                    <span id="modal-accuracy" class="text-2xl font-bold text-emerald-600">100%</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-2.5">
+                <button onclick="restartCurrentMode()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Làm BÀI LẠI
+                </button>
+                <button onclick="switchModeAndCloseModal()" id="modal-switch-btn" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl border border-slate-200 text-sm transition">
+                    Chuyển sang phần khác
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guide / Notebook Modal -->
+    <div id="guide-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-2xl w-full p-6 text-left max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-slate-200 pb-3 mb-4">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    Sổ Tay Quy Tắc Hóa Học Lớp 10
+                </h3>
+                <button onclick="toggleGuideModal(false)" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="overflow-y-auto space-y-4 text-xs md:text-sm text-slate-700 pr-1">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <h4 class="font-bold text-blue-700 text-sm mb-2 uppercase">1. Quy tắc xác định số Oxi hóa:</h4>
+                    <ul class="list-disc pl-5 space-y-1.5 leading-relaxed">
+                        <li><strong>Đơn chất:</strong> Số oxi hóa của các nguyên tố trong đơn chất bằng <strong>0</strong> (VD: Cu⁰, O₂⁰, Cl₂⁰).</li>
+                        <li><strong>Trong hợp chất:</strong> 
+                            <br>- Hydro (H) thường là <strong>+1</strong> (trừ hiđrua kim loại là -1).
+                            <br>- Oxi (O) thường là <strong>-2</strong> (trừ peroxit H₂O₂ là -1, F₂O là +2).
+                            <br>- Kim loại kiềm (Nhóm IA) luôn là <strong>+1</strong>; Kiềm thổ (Nhóm IIA) luôn là <strong>+2</strong>; Al luôn là <strong>+3</strong>.</li>
+                        <li><strong>Tổng số oxi hóa:</strong> Trong một phân tử trung hòa điện, tổng số oxi hóa của các nguyên tử bằng <strong>0</strong>. Trong ion đa nguyên tử, tổng bằng điện tích của ion đó.</li>
+                    </ul>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <h4 class="font-bold text-blue-700 text-sm mb-2 uppercase">2. Phương pháp cân bằng phản ứng:</h4>
+                    <ul class="list-disc pl-5 space-y-1.5 leading-relaxed">
+                        <li><strong>Cân bằng đại số/nguyên tố:</strong> Cân bằng kim loại trước &rarr; phi kim &rarr; Hydro (H) &rarr; kiểm tra Oxi (O).</li>
+                        <li><strong>Bảo toàn electron (Oxi hóa - Khử):</strong> Tổng số e nhường của chất khử = Tổng số e nhận của chất oxi hóa.</li>
+                        <li><strong>Chú ý:</strong> Hệ số phương trình phải là các số nguyên dương tối giản nhất. Hệ số 1 đại diện cho 1 phân tử/nguyên tử.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-200 text-right">
+                <button onclick="toggleGuideModal(false)" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg text-xs hover:bg-blue-700 transition">
+                    Đã hiểu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // EXERCISE DATASETS
+        // ==========================================
+
+        // Topic 1: Chemical Equation Balancing (Cân bằng Phương trình)
+        const BALANCING_QUESTIONS = [
+            {
+                id: 'b1',
+                category: 'Phản ứng Oxi hóa Kim loại',
+                difficulty: 'Dễ',
+                instruction: 'Cân bằng phương trình tạo thành Sắt từ kim loại sắt và Oxi:',
+                // Fe + O2 -> Fe3O4
+                parts: [
+                    { type: 'input', key: 'c1', target: 3 },
+                    { type: 'text', text: 'Fe + ' },
+                    { type: 'input', key: 'c2', target: 2 },
+                    { type: 'text', text: 'O<sub>2</sub> &rarr; ' },
+                    { type: 'input', key: 'c3', target: 1 },
+                    { type: 'text', text: 'Fe<sub>3</sub>O<sub>4</sub>' }
+                ],
+                numbers: [1, 2, 3, 4, 5, 6],
+                hint: 'Vế phải có 3 nguyên tử Fe và 4 nguyên tử O (2 phân tử O₂).'
+            },
+            {
+                id: 'b2',
+                category: 'Kim loại tác dụng với Axit',
+                difficulty: 'Trung bình',
+                instruction: 'Cân bằng phản ứng giữa Nhôm và Axit Clohiđric:',
+                // 2Al + 6HCl -> 2AlCl3 + 3H2
+                parts: [
+                    { type: 'input', key: 'c1', target: 2 },
+                    { type: 'text', text: 'Al + ' },
+                    { type: 'input', key: 'c2', target: 6 },
+                    { type: 'text', text: 'HCl &rarr; ' },
+                    { type: 'input', key: 'c3', target: 2 },
+                    { type: 'text', text: 'AlCl<sub>3</sub> + ' },
+                    { type: 'input', key: 'c4', target: 3 },
+                    { type: 'text', text: 'H<sub>2</sub>' }
+                ],
+                numbers: [1, 2, 3, 4, 5, 6, 8],
+                hint: 'Cân bằng Cl và H trước: Bội số chung nhỏ nhất của 3 (trong AlCl₃) và 2 (trong H₂) là 6.'
+            },
+            {
+                id: 'b3',
+                category: 'Phản ứng Cháy Hợp chất Hữu cơ',
+                difficulty: 'Trung bình',
+                instruction: 'Cân bằng phản ứng đốt cháy Ancol Etylic (C₂H₅OH):',
+                // 1 C2H6O + 3 O2 -> 2 CO2 + 3 H2O
+                parts: [
+                    { type: 'input', key: 'c1', target: 1 },
+                    { type: 'text', text: 'C<sub>2</sub>H<sub>6</sub>O + ' },
+                    { type: 'input', key: 'c2', target: 3 },
+                    { type: 'text', text: 'O<sub>2</sub> &rarr; ' },
+                    { type: 'input', key: 'c3', target: 2 },
+                    { type: 'text', text: 'CO<sub>2</sub> + ' },
+                    { type: 'input', key: 'c4', target: 3 },
+                    { type: 'text', text: 'H<sub>2</sub>O' }
+                ],
+                numbers: [1, 2, 3, 4, 5, 6],
+                hint: 'Cân bằng C (2 atoms) &rarr; H (6 atoms = 3 H₂O) &rarr; Đếm tổng O ở vế phải (7) trừ đi 1 O trong Ancol.'
+            },
+            {
+                id: 'b4',
+                category: 'Phản ứng Khử Oxit Kim loại',
+                difficulty: 'Trung bình',
+                instruction: 'Cân bằng phản ứng khử Fe₂O₃ bằng khí CO:',
+                // 1 Fe2O3 + 3 CO -> 2 Fe + 3 CO2
+                parts: [
+                    { type: 'input', key: 'c1', target: 1 },
+                    { type: 'text', text: 'Fe<sub>2</sub>O<sub>3</sub> + ' },
+                    { type: 'input', key: 'c2', target: 3 },
+                    { type: 'text', text: 'CO &rarr; ' },
+                    { type: 'input', key: 'c3', target: 2 },
+                    { type: 'text', text: 'Fe + ' },
+                    { type: 'input', key: 'c4', target: 3 },
+                    { type: 'text', text: 'CO<sub>2</sub>' }
+                ],
+                numbers: [1, 2, 3, 4, 5],
+                hint: '1 phân tử CO nhận 1 nguyên tử O để tạo thành 1 CO₂. Fe₂O₃ có 3 O nên cần 3 CO.'
+            },
+            {
+                id: 'b5',
+                category: 'Oxi hóa - Khử Phức tạp',
+                difficulty: 'Nâng cao',
+                instruction: 'Cân bằng phản ứng giữa Đồng và Axit Nitric loãng:',
+                // 3Cu + 8HNO3 -> 3Cu(NO3)2 + 2NO + 4H2O
+                parts: [
+                    { type: 'input', key: 'c1', target: 3 },
+                    { type: 'text', text: 'Cu + ' },
+                    { type: 'input', key: 'c2', target: 8 },
+                    { type: 'text', text: 'HNO<sub>3</sub> &rarr; ' },
+                    { type: 'input', key: 'c3', target: 3 },
+                    { type: 'text', text: 'Cu(NO<sub>3</sub>)<sub>2</sub> + ' },
+                    { type: 'input', key: 'c4', target: 2 },
+                    { type: 'text', text: 'NO + ' },
+                    { type: 'input', key: 'c5', target: 4 },
+                    { type: 'text', text: 'H<sub>2</sub>O' }
+                ],
+                numbers: [1, 2, 3, 4, 6, 8, 10],
+                hint: 'Dùng bảo toàn e: Cu nhường 2e (x3 = 6e), N⁺⁵ nhận 3e tạo NO (x2 = 6e). Số HNO₃ = 3x2 (muối) + 2 (khí) = 8.'
+            },
+            {
+                id: 'b6',
+                category: 'Phản ứng Oxi hóa Khử Lớp 10',
+                difficulty: 'Nâng cao',
+                instruction: 'Cân bằng phản ứng điều chế Cl₂ từ Thuốc tím KMnO₄ và HCl:',
+                // 2KMnO4 + 16HCl -> 2KCl + 2MnCl2 + 5Cl2 + 8H2O
+                parts: [
+                    { type: 'input', key: 'c1', target: 2 },
+                    { type: 'text', text: 'KMnO<sub>4</sub> + ' },
+                    { type: 'input', key: 'c2', target: 16 },
+                    { type: 'text', text: 'HCl &rarr; ' },
+                    { type: 'input', key: 'c3', target: 2 },
+                    { type: 'text', text: 'KCl + ' },
+                    { type: 'input', key: 'c4', target: 2 },
+                    { type: 'text', text: 'MnCl<sub>2</sub> + ' },
+                    { type: 'input', key: 'c5', target: 5 },
+                    { type: 'text', text: 'Cl<sub>2</sub> + ' },
+                    { type: 'input', key: 'c6', target: 8 },
+                    { type: 'text', text: 'H<sub>2</sub>O' }
+                ],
+                numbers: [2, 4, 5, 8, 10, 16],
+                hint: 'Mn⁺⁷ + 5e → Mn⁺²; 2Cl⁻ → Cl₂⁰ + 2e. Nhân chéo hệ số: 2 KMnO₄ và 5 Cl₂. Tổng HCl là 16.'
+            }
+        ];
+
+        // Topic 2: Oxidation State Determination (Xác định Số Oxi Hóa)
+        const OXIDATION_QUESTIONS = [
+            {
+                id: 'o1',
+                category: 'Hợp chất chứa Oxi của Mangan',
+                difficulty: 'Trung bình',
+                instruction: 'Xác định số oxi hóa của nguyên tố <strong class="text-blue-600">Mangan (Mn)</strong> trong Thuốc tím (KMnO₄):',
+                // KMnO4 -> K(+1) Mn(+7) O4(-2)
+                formulaHTML: 'K<sup>+1</sup><span class="text-blue-600 font-bold border-b-2 border-blue-600">Mn</span><sup>?</sup>O<sub>4</sub><sup>-2</sup>',
+                targetKey: 'ox1',
+                correctValue: '+7',
+                numbers: ['+1', '+2', '+4', '+6', '+7', '-1', '-2'],
+                hint: 'Tổng số oxi hóa = 0. Tương đương: (+1) + x + 4×(-2) = 0  ⇒  x = ?'
+            },
+            {
+                id: 'o2',
+                category: 'Muối Đicromat',
+                difficulty: 'Trung bình',
+                instruction: 'Xác định số oxi hóa của nguyên tố <strong class="text-blue-600">Crom (Cr)</strong> trong Kali đicromat (K₂Cr₂O₇):',
+                // K2Cr2O7 -> K2(+1) Cr2(+6) O7(-2)
+                formulaHTML: 'K<sub>2</sub><sup>+1</sup><span class="text-blue-600 font-bold border-b-2 border-blue-600">Cr</span><sub>2</sub><sup>?</sup>O<sub>7</sub><sup>-2</sup>',
+                targetKey: 'ox2',
+                correctValue: '+6',
+                numbers: ['+2', '+3', '+4', '+5', '+6', '+7'],
+                hint: '2×(+1) + 2x + 7×(-2) = 0  ⇒  2x - 12 = 0  ⇒  x = ?'
+            },
+            {
+                id: 'o3',
+                category: 'Axit Nitric',
+                difficulty: 'Dễ',
+                instruction: 'Xác định số oxi hóa của nguyên tố <strong class="text-blue-600">Nitơ (N)</strong> trong Axit Nitric (HNO₃):',
+                // HNO3 -> H(+1) N(+5) O3(-2)
+                formulaHTML: 'H<sup>+1</sup><span class="text-blue-600 font-bold border-b-2 border-blue-600">N</span><sup>?</sup>O<sub>3</sub><sup>-2</sup>',
+                targetKey: 'ox3',
+                correctValue: '+5',
+                numbers: ['+1', '+3', '+4', '+5', '-3', '0'],
+                hint: '(+1) + x + 3×(-2) = 0  ⇒  x - 5 = 0  ⇒  x = ?'
+            },
+            {
+                id: 'o4',
+                category: 'Axit Sunfuric',
+                difficulty: 'Dễ',
+                instruction: 'Xác định số oxi hóa của nguyên tố <strong class="text-blue-600">Lưu huỳnh (S)</strong> trong H₂SO₄:',
+                // H2SO4 -> H2(+1) S(+6) O4(-2)
+                formulaHTML: 'H<sub>2</sub><sup>+1</sup><span class="text-blue-600 font-bold border-b-2 border-blue-600">S</span><sup>?</sup>O<sub>4</sub><sup>-2</sup>',
+                targetKey: 'ox4',
+                correctValue: '+6',
+                numbers: ['+2', '+4', '+6', '-2', '0'],
+                hint: '2×(+1) + x + 4×(-2) = 0  ⇒  x - 6 = 0  ⇒  x = ?'
+            },
+            {
+                id: 'o5',
+                category: 'Ion Đa Nguyên Tử',
+                difficulty: 'Nâng cao',
+                instruction: 'Xác định số oxi hóa của nguyên tố <strong class="text-blue-600">Nitơ (N)</strong> trong ion Amoni (NH₄⁺):',
+                // NH4+ -> N(-3) H4(+1) -> total charge = +1
+                formulaHTML: '[ <span class="text-blue-600 font-bold border-b-2 border-blue-600">N</span><sup>?</sup>H<sub>4</sub><sup>+1</sup> ]<sup>+</sup>',
+                targetKey: 'ox5',
+                correctValue: '-3',
+                numbers: ['+3', '+5', '-3', '-5', '0'],
+                hint: 'Tổng số oxi hóa bằng điện tích của ion (+1). Phương trình: x + 4×(+1) = +1  ⇒  x = ?'
+            },
+            {
+                id: 'o6',
+                category: 'Axit Pecloric',
+                difficulty: 'Nâng cao',
+                instruction: 'Xác định số oxi hóa của nguyên tố <strong class="text-blue-600">Clo (Cl)</strong> trong Axit Pecloric (HClO₄):',
+                // HClO4 -> H(+1) Cl(+7) O4(-2)
+                formulaHTML: 'H<sup>+1</sup><span class="text-blue-600 font-bold border-b-2 border-blue-600">Cl</span><sup>?</sup>O<sub>4</sub><sup>-2</sup>',
+                targetKey: 'ox6',
+                correctValue: '+7',
+                numbers: ['-1', '+1', '+3', '+5', '+7'],
+                hint: '(+1) + x + 4×(-2) = 0  ⇒  x - 7 = 0  ⇒  x = ?'
+            }
+        ];
+
+        // ==========================================
+        // APP STATE MANAGERS
+        // ==========================================
+        let currentMode = 'balancing'; // 'balancing' or 'oxidation'
+        let currentIndex = 0;
+        let score = 0;
+        let userAnswers = {}; // Map of key -> selected value
+        let selectedTileValue = null; // Currently selected number tile (for click/tap mode)
+        let soundEnabled = true;
+
+        // Simple Web Audio API Synth for audio effects
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            if (!soundEnabled || !audioCtx) return;
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'success') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.exponentialRampToValueAtTime(659.25, audioCtx.currentTime + 0.15); // E5
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(130, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                }
+            } catch (e) {
+                console.log('Audio playback prevented');
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('sound-icon-on').classList.toggle('hidden', !soundEnabled);
+            document.getElementById('sound-icon-off').classList.toggle('hidden', soundEnabled);
+        }
+
+        // ==========================================
+        // RENDER FUNCTIONS
+        // ==========================================
+
+        function getCurrentDataset() {
+            return currentMode === 'balancing' ? BALANCING_QUESTIONS : OXIDATION_QUESTIONS;
+        }
+
+        function switchMode(mode) {
+            if (currentMode === mode) return;
+            currentMode = mode;
+            currentIndex = 0;
+            score = 0;
+
+            // Update Tab UI
+            const tabBalancing = document.getElementById('tab-balancing');
+            const tabOxidation = document.getElementById('tab-oxidation');
+
+            if (mode === 'balancing') {
+                tabBalancing.className = "flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 bg-blue-600 text-white shadow-sm";
+                tabOxidation.className = "flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 bg-slate-100 text-slate-600 hover:bg-slate-200";
+            } else {
+                tabOxidation.className = "flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 bg-blue-600 text-white shadow-sm";
+                tabBalancing.className = "flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 bg-slate-100 text-slate-600 hover:bg-slate-200";
+            }
+
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const dataset = getCurrentDataset();
+            const q = dataset[currentIndex];
+            userAnswers = {};
+            selectedTileValue = null;
+
+            // Hide hint & status message
+            document.getElementById('hint-box').classList.add('hidden');
+            document.getElementById('status-message').classList.add('hidden');
+            document.getElementById('question-card').classList.remove('animate-shake');
+
+            // Update Header Meta
+            document.getElementById('progress-text').innerText = `Tiến độ: Câu ${currentIndex + 1} / ${dataset.length}`;
+            document.getElementById('score-text').innerText = `Điểm số: ${score}`;
+            document.getElementById('progress-bar').style.width = `${((currentIndex) / dataset.length) * 100}%`;
+            
+            document.getElementById('question-badge').innerText = q.category;
+            document.getElementById('difficulty-badge').innerText = `Độ khó: ${q.difficulty}`;
+            document.getElementById('hint-text').innerText = q.hint;
+
+            // Update Instruction
+            const instEl = document.getElementById('question-instruction');
+            if (currentMode === 'balancing') {
+                instEl.innerHTML = `Kéo thả các hệ số thích hợp vào các ô trống <span class="chem-font text-blue-600 font-bold">[ ? ]</span> để cân bằng phương trình:`;
+            } else {
+                instEl.innerHTML = q.instruction;
+            }
+
+            // Render Central Equation / Compound Area
+            const eqContainer = document.getElementById('equation-display');
+            eqContainer.innerHTML = '';
+
+            if (currentMode === 'balancing') {
+                q.parts.forEach(part => {
+                    if (part.type === 'text') {
+                        const span = document.createElement('span');
+                        span.className = 'mx-1.5';
+                        span.innerHTML = part.text;
+                        eqContainer.appendChild(span);
+                    } else if (part.type === 'input') {
+                        const dropZone = createDropZone(part.key);
+                        eqContainer.appendChild(dropZone);
+                    }
+                });
+            } else {
+                // Oxidation Mode Display
+                const wrapper = document.createElement('div');
+                wrapper.className = 'flex items-center gap-2 flex-wrap justify-center';
+
+                const formulaSpan = document.createElement('span');
+                formulaSpan.className = 'text-2xl md:text-3xl tracking-widest';
+                formulaSpan.innerHTML = q.formulaHTML;
+
+                const dropZone = createDropZone(q.targetKey, 'top-slot');
+
+                wrapper.appendChild(formulaSpan);
+                wrapper.appendChild(document.createTextNode(' → '));
+                wrapper.appendChild(dropZone);
+                eqContainer.appendChild(wrapper);
+            }
+
+            // Render Number Palette Bank
+            renderNumberBank(q.numbers);
+        }
+
+
+        function createDropZone(key, customClass = '') {
+            const dz = document.createElement('div');
+            dz.className = `drop-zone ${customClass} inline-flex items-center justify-center rounded-lg border-2 text-lg font-bold bg-white text-slate-400 mx-1 px-2.5 py-1 cursor-pointer shadow-inner transition-all select-none`;
+            dz.dataset.key = key;
+            dz.innerHTML = '<span class="text-slate-300 font-mono text-sm">[ ? ]</span>';
+
+            // Mobile/Click selection handler
+            dz.onclick = () => handleDropZoneClick(key, dz);
+
+            // HTML5 Drag and Drop event handlers
+            dz.ondragover = (e) => {
+                e.preventDefault();
+                dz.classList.add('drag-over');
+            };
+            dz.ondragleave = () => {
+                dz.classList.remove('drag-over');
+            };
+            dz.ondrop = (e) => {
+                e.preventDefault();
+                dz.classList.remove('drag-over');
+                const val = e.dataTransfer.getData('text/plain');
+                if (val) {
+                    fillZone(key, dz, val);
+                }
+            };
+
+            return dz;
+        }
+
+        function renderNumberBank(numbers) {
+            const bank = document.getElementById('number-bank');
+            bank.innerHTML = '';
+
+            numbers.forEach(num => {
+                const tile = document.createElement('div');
+                tile.className = 'number-tile chem-font bg-slate-800 hover:bg-slate-700 active:bg-blue-600 text-white font-bold text-lg px-4 py-2 rounded-xl shadow-md border border-slate-700 transition flex items-center justify-center min-w-[2.75rem] select-none';
+                tile.innerText = num;
+                tile.setAttribute('draggable', 'true');
+
+                // Drag Start
+                tile.ondragstart = (e) => {
+                    e.dataTransfer.setData('text/plain', num.toString());
+                    tile.classList.add('opacity-50');
+                };
+
+                tile.ondragend = () => {
+                    tile.classList.remove('opacity-50');
+                };
+
+                // Click / Tap select (for mobile or quick click)
+                tile.onclick = () => {
+                    document.querySelectorAll('.number-tile').forEach(t => t.classList.remove('selected', 'ring-4', 'ring-blue-500'));
+                    if (selectedTileValue === num) {
+                        selectedTileValue = null;
+                    } else {
+                        selectedTileValue = num;
+                        tile.classList.add('selected', 'ring-4', 'ring-blue-500');
+                    }
+                };
+
+                bank.appendChild(tile);
+            });
+        }
+
+
+        function handleDropZoneClick(key, element) {
+            if (selectedTileValue !== null) {
+                fillZone(key, element, selectedTileValue);
+            } else if (userAnswers[key] !== undefined) {
+                // Clear zone if clicked without active selection
+                clearZone(key, element);
+            }
+        }
+
+        function fillZone(key, element, value) {
+            userAnswers[key] = value;
+            element.innerHTML = `<span class="text-blue-600 font-bold font-mono text-xl">${value}</span>`;
+            element.classList.add('filled');
+            element.classList.remove('correct', 'incorrect');
+            
+            // Unselect tiles
+            selectedTileValue = null;
+            document.querySelectorAll('.number-tile').forEach(t => t.classList.remove('selected', 'ring-4', 'ring-blue-500'));
+        }
+
+        function clearZone(key, element) {
+            delete userAnswers[key];
+            element.innerHTML = '<span class="text-slate-300 font-mono text-sm">[ ? ]</span>';
+            element.classList.remove('filled', 'correct', 'incorrect');
+        }
+
+        function resetCurrentQuestion() {
+            userAnswers = {};
+            selectedTileValue = null;
+            document.querySelectorAll('.drop-zone').forEach(dz => {
+                dz.innerHTML = '<span class="text-slate-300 font-mono text-sm">[ ? ]</span>';
+                dz.classList.remove('filled', 'correct', 'incorrect');
+            });
+            document.querySelectorAll('.number-tile').forEach(t => t.classList.remove('selected', 'ring-4', 'ring-blue-500'));
+            document.getElementById('status-message').classList.add('hidden');
+        }
+
+
+        function checkAnswer() {
+            const dataset = getCurrentDataset();
+            const q = dataset[currentIndex];
+            let isCorrect = true;
+            let missingInputs = false;
+
+            if (currentMode === 'balancing') {
+                const inputParts = q.parts.filter(p => p.type === 'input');
+                inputParts.forEach(part => {
+                    const userVal = userAnswers[part.key];
+                    const dz = document.querySelector(`.drop-zone[data-key="${part.key}"]`);
+                    
+                    if (userVal === undefined) {
+                        missingInputs = true;
+                    } else if (parseInt(userVal) !== part.target) {
+                        isCorrect = false;
+                        if (dz) dz.classList.add('incorrect');
+                    } else {
+                        if (dz) dz.classList.add('correct');
+                    }
+                });
+            } else {
+                // Oxidation Mode Check
+                const userVal = userAnswers[q.targetKey];
+                const dz = document.querySelector(`.drop-zone[data-key="${q.targetKey}"]`);
+
+                if (userVal === undefined) {
+                    missingInputs = true;
+                } else if (userVal.toString() !== q.correctValue.toString()) {
+                    isCorrect = false;
+                    if (dz) dz.classList.add('incorrect');
+                } else {
+                    if (dz) dz.classList.add('correct');
+                }
+            }
+
+            const statusMsg = document.getElementById('status-message');
+            const card = document.getElementById('question-card');
+
+            if (missingInputs) {
+                statusMsg.className = "p-3 rounded-lg text-xs md:text-sm font-semibold text-center bg-amber-100 text-amber-800 border border-amber-300 transition-all";
+                statusMsg.innerText = "⚠️ Hãy điền đầy đủ tất cả các vị trí [ ? ] trước khi kiểm tra!";
+                statusMsg.classList.remove('hidden');
+                playSound('error');
+                return;
+            }
+
+            if (isCorrect) {
+                // Correct Flow
+                score += 20;
+                document.getElementById('score-text').innerText = `Điểm số: ${score}`;
+                statusMsg.className = "p-3.5 rounded-lg text-sm md:text-base font-bold text-center bg-emerald-100 text-emerald-800 border border-emerald-300 transition-all shadow-sm";
+                statusMsg.innerText = "🎉 CHÍNH XÁC! Bạn đã trả lời đúng. Tự động chuyển câu sau 1.5 giây...";
+                statusMsg.classList.remove('hidden');
+                
+                playSound('success');
+                card.classList.add('animate-success');
+
+                setTimeout(() => {
+                    card.classList.remove('animate-success');
+                    if (currentIndex < dataset.length - 1) {
+                        currentIndex++;
+                        renderQuestion();
+                    } else {
+                        showCompletionModal();
+                    }
+                }, 1600);
+
+            } else {
+                // Incorrect Flow
+                statusMsg.className = "p-3.5 rounded-lg text-sm font-semibold text-center bg-rose-100 text-rose-800 border border-rose-300 transition-all shadow-sm";
+                statusMsg.innerText = "❌ CHƯA CHÍNH XÁC. Hãy kiểm tra lại theo gợi ý bên trên!";
+                statusMsg.classList.remove('hidden');
+
+                // Auto reveal hint on mistake
+                document.getElementById('hint-box').classList.remove('hidden');
+                
+                playSound('error');
+                card.classList.add('animate-shake');
+                setTimeout(() => card.classList.remove('animate-shake'), 500);
+            }
+        }
+
+        function toggleHint() {
+            const hintBox = document.getElementById('hint-box');
+            hintBox.classList.toggle('hidden');
+        }
+
+        function toggleGuideModal(show) {
+            const modal = document.getElementById('guide-modal');
+            if (show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+
+        function showCompletionModal() {
+            const dataset = getCurrentDataset();
+            const modal = document.getElementById('completion-modal');
+            
+            document.getElementById('modal-final-score').innerText = score;
+            document.getElementById('modal-accuracy').innerText = `${Math.min(100, Math.round((score / (dataset.length * 20)) * 100))}%`;
+            
+            const switchBtn = document.getElementById('modal-switch-btn');
+            if (currentMode === 'balancing') {
+                switchBtn.innerText = 'Chuyển sang: 2. Xác Định Số Oxi Hóa';
+            } else {
+                switchBtn.innerText = 'Chuyển sang: 1. Cân Bằng Phản Ứng';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function restartCurrentMode() {
+            document.getElementById('completion-modal').classList.add('hidden');
+            currentIndex = 0;
+            score = 0;
+            renderQuestion();
+        }
+
+        function switchModeAndCloseModal() {
+            document.getElementById('completion-modal').classList.add('hidden');
+            const targetMode = currentMode === 'balancing' ? 'oxidation' : 'balancing';
+            switchMode(targetMode);
+        }
+
+        // Initialize App on DOM Ready
+        window.onload = function() {
+            renderQuestion();
+        };
+    </script>
+</body>
+</html>
